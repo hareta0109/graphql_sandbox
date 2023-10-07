@@ -1,0 +1,45 @@
+version: '3'
+
+env:
+  GQLGEN_VERSION: v0.17.39
+  GO_VERSION: 1.21.1
+  GO: "go{{.GO_VERSION}}"
+  LINT_VERSION: v1.54.2
+
+tasks:
+  gqlgen:
+    desc: gqlgen generate を実行
+    cmds:
+      - "{{.GO}} run github.com/99designs/gqlgen@{{.GQLGEN_VERSION}} generate --verbose"
+
+  fmt:
+    desc: go fmt を実行
+    cmds:
+      - "{{.GO}} fmt ./internal/..."
+
+  lint:
+    desc: golangci-lint run を実行
+    cmds:
+      - golangci-lint run --verbose --config .golangci.yml
+
+  run:
+    desc: server を起動
+    cmds:
+      - "{{.GO}} run internal/main.go"
+
+  install-tools:
+    desc: 必要なツールをまとめてインストール
+    cmds:
+      - task install-go
+      - task install-lint
+  
+  install-go:
+    desc: go{{.GO_VERSION}} をインストール
+    cmds:
+      - go install golang.org/dl/{{.GO}}@latest
+      - "{{.GO}} download"
+
+  install-lint:
+    desc: golangci-lint{{.LINT_VERSION}} をインストール
+    cmds:
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@{{.LINT_VERSION}}
