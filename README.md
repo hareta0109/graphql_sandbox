@@ -15,6 +15,12 @@ GraphQL の砂場環境のリポジトリ
 task run
 ```
 
+## linter の実行
+```
+# .golanci.yml を元に golangci-lint が実行される
+task lint
+```
+
 ## GraphQL
 
 ```
