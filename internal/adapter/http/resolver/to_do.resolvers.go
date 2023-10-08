@@ -8,15 +8,27 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hareta0109/graphql_sandbox/internal/domain/model"
 	"github.com/hareta0109/graphql_sandbox/internal/domain/model/graph"
+	"github.com/hareta0109/graphql_sandbox/internal/lib/graph/generated"
 )
 
 // CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input graph.NewTodo) (*graph.Todo, error) {
+func (r *mutationResolver) CreateTodo(ctx context.Context, input graph.NewTodo) (*model.Todo, error) {
 	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
 }
 
 // Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*graph.Todo, error) {
+func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
 	panic(fmt.Errorf("not implemented: Todos - todos"))
 }
+
+// User is the resolver for the user field.
+func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: User - user"))
+}
+
+// Todo returns generated.TodoResolver implementation.
+func (r *Resolver) Todo() generated.TodoResolver { return &todoResolver{r} }
+
+type todoResolver struct{ *Resolver }

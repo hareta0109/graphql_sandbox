@@ -3,3 +3,17 @@ type User {
   name: String!
   department: Department!
 }
+
+extend type Query {
+  user(id:String!): User!
+  users: [User!]!
+}
+
+input NewUser {
+  name: String!
+  departmentId: String!
+}
+
+extend type Mutation {
+  newUser(input: NewUser!): User!
+}
