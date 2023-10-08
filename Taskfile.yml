@@ -7,6 +7,11 @@ env:
   LINT_VERSION: v1.54.2
 
 tasks:
+  run:
+    desc: server を起動
+    cmds:
+      - "{{.GO}} run cmd/main.go"
+
   gqlgen:
     desc: gqlgen generate を実行
     cmds:
@@ -21,11 +26,6 @@ tasks:
     desc: golangci-lint run を実行
     cmds:
       - golangci-lint run --verbose --config .golangci.yml
-
-  run:
-    desc: server を起動
-    cmds:
-      - "{{.GO}} run internal/main.go"
 
   install-tools:
     desc: 必要なツールをまとめてインストール
@@ -43,3 +43,22 @@ tasks:
     desc: golangci-lint{{.LINT_VERSION}} をインストール
     cmds:
       - go install github.com/golangci/golangci-lint/cmd/golangci-lint@{{.LINT_VERSION}}
+
+  docker-init:
+    desc: Dockerコンテナを初期化
+    cmds:
+      - task docker-down
+      - task docker-build
+      - task docker-up
+
+  docker-build:
+    cmds: 
+      - docker-compose build --no-cache
+
+  docker-up:
+    cmds: 
+      - docker-compose up -d
+
+  docker-down:
+    cmds:
+      - docker-compose down

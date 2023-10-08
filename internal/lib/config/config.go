@@ -6,7 +6,13 @@ import (
 )
 
 type Config struct {
-	Port string `env:"API_PORT" envDefault:"8080"`
+	Port       string `env:"API_PORT" envDefault:"8080"`
+	DBHost     string `env:"API_DB_HOST" envDefault:"localhost"`
+	DBName     string `env:"API_DB_NAME" envDefault:"postgres"`
+	DBUser     string `env:"API_DB_USER" envDefault:"postgres"`
+	DBPass     string `env:"API_DB_PASS" envDefault:"root"`
+	DBPort     string `env:"API_DB_PORT" envDefault:"5432"`
+	DBTimeZone string `env:"API_DB_TIMEZONE" envDefault:"Asia/Shanghai"`
 }
 
 func New() (*Config, error) {

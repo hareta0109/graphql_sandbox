@@ -1,38 +1,43 @@
 # GraphQL SANDBOX
 
-GraphQL の砂場環境のリポジトリ
+GraphQL + クリーンアーキテクチャを試すための砂場
 
 # requirements
 
-- go-task 3.30.1 
+- Docker 24.0.5
+- Docker Compose 2.20.2
+- go-task 3.30.1
 - GoLang
 
 # Usage
 
-## ソースの実行
-
+## Getting Started
 ```
-task run
+# コンテナの起動
+$ task docker-init
+
+# cmd/main.go を実行
+$ task run  # serve at localhost:8080
 ```
 
 ## linter の実行
 ```
 # .golanci.yml を元に golangci-lint が実行される
-task lint
+$ task lint
 ```
 
 ## GraphQL
-
 ```
-task gqlgen
+# gqlgen generate
+$ task gqlgen
 ```
 
 ## 開発に必要なツールのインストール
 
 ```
 # go-task のインストール
-go install github.com/go-task/task/v3/cmd/task@v3.30.1
+$ go install github.com/go-task/task/v3/cmd/task@v3.30.1
 
 # 必要なツールのインストール
-task install-tools
+$ task install-tools
 ```
