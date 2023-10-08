@@ -13,7 +13,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	graphmodel "github.com/hareta0109/graphql_sandbox/internal/graph/model"
+	"github.com/hareta0109/graphql_sandbox/internal/domain/model/graph"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -23,6 +23,7 @@ import (
 // NewExecutableSchema creates an ExecutableSchema from the ResolverRoot interface.
 func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
 	return &executableSchema{
+		schema:     cfg.Schema,
 		resolvers:  cfg.Resolvers,
 		directives: cfg.Directives,
 		complexity: cfg.Complexity,
@@ -30,6 +31,7 @@ func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
 }
 
 type Config struct {
+	Schema     *ast.Schema
 	Resolvers  ResolverRoot
 	Directives DirectiveRoot
 	Complexity ComplexityRoot
@@ -50,7 +52,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateTodo    func(childComplexity int, input graphmodel.NewTodo) int
+		CreateTodo    func(childComplexity int, input graph.NewTodo) int
 		MutationQuery func(childComplexity int) int
 	}
 
@@ -75,20 +77,24 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	MutationQuery(ctx context.Context) (string, error)
-	CreateTodo(ctx context.Context, input graphmodel.NewTodo) (*graphmodel.Todo, error)
+	CreateTodo(ctx context.Context, input graph.NewTodo) (*graph.Todo, error)
 }
 type QueryResolver interface {
 	HelloQuery(ctx context.Context) (string, error)
-	Todos(ctx context.Context) ([]*graphmodel.Todo, error)
+	Todos(ctx context.Context) ([]*graph.Todo, error)
 }
 
 type executableSchema struct {
+	schema     *ast.Schema
 	resolvers  ResolverRoot
 	directives DirectiveRoot
 	complexity ComplexityRoot
 }
 
 func (e *executableSchema) Schema() *ast.Schema {
+	if e.schema != nil {
+		return e.schema
+	}
 	return parsedSchema
 }
 
@@ -121,7 +127,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateTodo(childComplexity, args["input"].(graphmodel.NewTodo)), true
+		return e.complexity.Mutation.CreateTodo(childComplexity, args["input"].(graph.NewTodo)), true
 
 	case "Mutation.mutationQuery":
 		if e.complexity.Mutation.MutationQuery == nil {
@@ -288,14 +294,14 @@ func (ec *executionContext) introspectSchema() (*introspection.Schema, error) {
 	if ec.DisableIntrospection {
 		return nil, errors.New("introspection disabled")
 	}
-	return introspection.WrapSchema(parsedSchema), nil
+	return introspection.WrapSchema(ec.Schema()), nil
 }
 
 func (ec *executionContext) introspectType(name string) (*introspection.Type, error) {
 	if ec.DisableIntrospection {
 		return nil, errors.New("introspection disabled")
 	}
-	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
+	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
 var sources = []*ast.Source{
@@ -344,10 +350,10 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_createTodo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 graphmodel.NewTodo
+	var arg0 graph.NewTodo
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewTodo2githubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋgraphᚋmodelᚐNewTodo(ctx, tmp)
+		arg0, err = ec.unmarshalNNewTodo2githubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋdomainᚋmodelᚋgraphᚐNewTodo(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -409,7 +415,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Department_id(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Department) (ret graphql.Marshaler) {
+func (ec *executionContext) _Department_id(ctx context.Context, field graphql.CollectedField, obj *graph.Department) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Department_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -453,7 +459,7 @@ func (ec *executionContext) fieldContext_Department_id(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Department_name(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Department) (ret graphql.Marshaler) {
+func (ec *executionContext) _Department_name(ctx context.Context, field graphql.CollectedField, obj *graph.Department) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Department_name(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -555,7 +561,7 @@ func (ec *executionContext) _Mutation_createTodo(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateTodo(rctx, fc.Args["input"].(graphmodel.NewTodo))
+		return ec.resolvers.Mutation().CreateTodo(rctx, fc.Args["input"].(graph.NewTodo))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -567,9 +573,9 @@ func (ec *executionContext) _Mutation_createTodo(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*graphmodel.Todo)
+	res := resTmp.(*graph.Todo)
 	fc.Result = res
-	return ec.marshalNTodo2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋgraphᚋmodelᚐTodo(ctx, field.Selections, res)
+	return ec.marshalNTodo2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋdomainᚋmodelᚋgraphᚐTodo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createTodo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -676,9 +682,9 @@ func (ec *executionContext) _Query_todos(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*graphmodel.Todo)
+	res := resTmp.([]*graph.Todo)
 	fc.Result = res
-	return ec.marshalNTodo2ᚕᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋgraphᚋmodelᚐTodoᚄ(ctx, field.Selections, res)
+	return ec.marshalNTodo2ᚕᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋdomainᚋmodelᚋgraphᚐTodoᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_todos(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -833,7 +839,7 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Todo_id(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Todo) (ret graphql.Marshaler) {
+func (ec *executionContext) _Todo_id(ctx context.Context, field graphql.CollectedField, obj *graph.Todo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Todo_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -877,7 +883,7 @@ func (ec *executionContext) fieldContext_Todo_id(ctx context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _Todo_text(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Todo) (ret graphql.Marshaler) {
+func (ec *executionContext) _Todo_text(ctx context.Context, field graphql.CollectedField, obj *graph.Todo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Todo_text(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -921,7 +927,7 @@ func (ec *executionContext) fieldContext_Todo_text(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Todo_done(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Todo) (ret graphql.Marshaler) {
+func (ec *executionContext) _Todo_done(ctx context.Context, field graphql.CollectedField, obj *graph.Todo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Todo_done(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -965,7 +971,7 @@ func (ec *executionContext) fieldContext_Todo_done(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Todo_user(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Todo) (ret graphql.Marshaler) {
+func (ec *executionContext) _Todo_user(ctx context.Context, field graphql.CollectedField, obj *graph.Todo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Todo_user(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -991,9 +997,9 @@ func (ec *executionContext) _Todo_user(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*graphmodel.User)
+	res := resTmp.(*graph.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋdomainᚋmodelᚋgraphᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Todo_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1017,7 +1023,7 @@ func (ec *executionContext) fieldContext_Todo_user(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *graphmodel.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *graph.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1061,7 +1067,7 @@ func (ec *executionContext) fieldContext_User_id(ctx context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _User_name(ctx context.Context, field graphql.CollectedField, obj *graphmodel.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_name(ctx context.Context, field graphql.CollectedField, obj *graph.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_name(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1105,7 +1111,7 @@ func (ec *executionContext) fieldContext_User_name(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _User_department(ctx context.Context, field graphql.CollectedField, obj *graphmodel.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_department(ctx context.Context, field graphql.CollectedField, obj *graph.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_department(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1131,9 +1137,9 @@ func (ec *executionContext) _User_department(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*graphmodel.Department)
+	res := resTmp.(*graph.Department)
 	fc.Result = res
-	return ec.marshalNDepartment2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋgraphᚋmodelᚐDepartment(ctx, field.Selections, res)
+	return ec.marshalNDepartment2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋdomainᚋmodelᚋgraphᚐDepartment(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_department(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2928,8 +2934,8 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputNewTodo(ctx context.Context, obj interface{}) (graphmodel.NewTodo, error) {
-	var it graphmodel.NewTodo
+func (ec *executionContext) unmarshalInputNewTodo(ctx context.Context, obj interface{}) (graph.NewTodo, error) {
+	var it graph.NewTodo
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -2976,7 +2982,7 @@ func (ec *executionContext) unmarshalInputNewTodo(ctx context.Context, obj inter
 
 var departmentImplementors = []string{"Department"}
 
-func (ec *executionContext) _Department(ctx context.Context, sel ast.SelectionSet, obj *graphmodel.Department) graphql.Marshaler {
+func (ec *executionContext) _Department(ctx context.Context, sel ast.SelectionSet, obj *graph.Department) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, departmentImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -3170,7 +3176,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 
 var todoImplementors = []string{"Todo"}
 
-func (ec *executionContext) _Todo(ctx context.Context, sel ast.SelectionSet, obj *graphmodel.Todo) graphql.Marshaler {
+func (ec *executionContext) _Todo(ctx context.Context, sel ast.SelectionSet, obj *graph.Todo) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, todoImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -3224,7 +3230,7 @@ func (ec *executionContext) _Todo(ctx context.Context, sel ast.SelectionSet, obj
 
 var userImplementors = []string{"User"}
 
-func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *graphmodel.User) graphql.Marshaler {
+func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *graph.User) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -3612,7 +3618,7 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNDepartment2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋgraphᚋmodelᚐDepartment(ctx context.Context, sel ast.SelectionSet, v *graphmodel.Department) graphql.Marshaler {
+func (ec *executionContext) marshalNDepartment2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋdomainᚋmodelᚋgraphᚐDepartment(ctx context.Context, sel ast.SelectionSet, v *graph.Department) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -3637,7 +3643,7 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNNewTodo2githubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋgraphᚋmodelᚐNewTodo(ctx context.Context, v interface{}) (graphmodel.NewTodo, error) {
+func (ec *executionContext) unmarshalNNewTodo2githubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋdomainᚋmodelᚋgraphᚐNewTodo(ctx context.Context, v interface{}) (graph.NewTodo, error) {
 	res, err := ec.unmarshalInputNewTodo(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -3657,11 +3663,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNTodo2githubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v graphmodel.Todo) graphql.Marshaler {
+func (ec *executionContext) marshalNTodo2githubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋdomainᚋmodelᚋgraphᚐTodo(ctx context.Context, sel ast.SelectionSet, v graph.Todo) graphql.Marshaler {
 	return ec._Todo(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTodo2ᚕᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋgraphᚋmodelᚐTodoᚄ(ctx context.Context, sel ast.SelectionSet, v []*graphmodel.Todo) graphql.Marshaler {
+func (ec *executionContext) marshalNTodo2ᚕᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋdomainᚋmodelᚋgraphᚐTodoᚄ(ctx context.Context, sel ast.SelectionSet, v []*graph.Todo) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3685,7 +3691,7 @@ func (ec *executionContext) marshalNTodo2ᚕᚖgithubᚗcomᚋhareta0109ᚋgraph
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTodo2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋgraphᚋmodelᚐTodo(ctx, sel, v[i])
+			ret[i] = ec.marshalNTodo2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋdomainᚋmodelᚋgraphᚐTodo(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3705,7 +3711,7 @@ func (ec *executionContext) marshalNTodo2ᚕᚖgithubᚗcomᚋhareta0109ᚋgraph
 	return ret
 }
 
-func (ec *executionContext) marshalNTodo2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v *graphmodel.Todo) graphql.Marshaler {
+func (ec *executionContext) marshalNTodo2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋdomainᚋmodelᚋgraphᚐTodo(ctx context.Context, sel ast.SelectionSet, v *graph.Todo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -3715,7 +3721,7 @@ func (ec *executionContext) marshalNTodo2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_
 	return ec._Todo(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *graphmodel.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋhareta0109ᚋgraphql_sandboxᚋinternalᚋdomainᚋmodelᚋgraphᚐUser(ctx context.Context, sel ast.SelectionSet, v *graph.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

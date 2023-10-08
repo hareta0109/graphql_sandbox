@@ -7,8 +7,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/hareta0109/graphql_sandbox/internal/graph/generated"
-	"github.com/hareta0109/graphql_sandbox/internal/graph/resolver"
+	"github.com/hareta0109/graphql_sandbox/internal/adapter/http/resolver"
+	"github.com/hareta0109/graphql_sandbox/internal/lib/graph/generated"
 )
 
 const defaultPort = "8080"
