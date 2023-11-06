@@ -14,15 +14,13 @@ const (
 )
 
 // Loaders / 各DataLoaderを取りまとめるstruct
-type Loaders struct{}
+type Loaders struct {
+	DepartmentLoader *dataloader.Loader
+	UserLoader       *dataloader.Loader
+}
 
 // BatchFuncMap / 外部から渡されるBatchFunc型を束ねたもの
 type BatchFuncMap map[string]*dataloader.BatchFunc
-
-func NewLoaders() *Loaders {
-	loaders := &Loaders{}
-	return loaders
-}
 
 // Middleware LoadersをcontextにインジェクトするHTTPミドルウェア
 func Middleware(loaders *Loaders, next http.Handler) http.Handler {

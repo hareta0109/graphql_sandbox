@@ -65,8 +65,8 @@ omit_slice_element_pointers: false
 
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
-# autobind:
-#  - "github.com/hareta0109/graphql_sandbox/internal/domain/model"
+autobind:
+ - "github.com/hareta0109/graphql_sandbox/internal/domain/model"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -76,12 +76,13 @@ omit_slice_element_pointers: false
 models:
   ID:
     model:
+      - github.com/99designs/gqlgen/graphql.Uint64
       - github.com/99designs/gqlgen/graphql.ID
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
   Int:
     model:
-      - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
+      - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int32

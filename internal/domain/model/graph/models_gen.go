@@ -3,24 +3,20 @@
 package graph
 
 type Department struct {
-	ID   string `json:"id"`
+	ID   uint64 `json:"id"`
 	Name string `json:"name"`
 }
 
-type NewTodo struct {
+type DepartmentCreateInput struct {
+	Name string `json:"name"`
+}
+
+type TodoCreateInput struct {
 	Text   string `json:"text"`
-	UserID string `json:"userId"`
+	UserID uint64 `json:"userId"`
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
-}
-
-type User struct {
-	ID         string      `json:"id"`
-	Name       string      `json:"name"`
-	Department *Department `json:"department"`
+type UserCreateInput struct {
+	Name         string `json:"name"`
+	DepartmentID uint64 `json:"departmentId"`
 }

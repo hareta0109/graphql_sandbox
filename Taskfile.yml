@@ -5,6 +5,7 @@ env:
   GO_VERSION: 1.21.1
   GO: "go{{.GO_VERSION}}"
   LINT_VERSION: v1.54.2
+  GOOSE_VERSION: v3.15.0
 
 tasks:
   run:
@@ -40,7 +41,7 @@ tasks:
       - "{{.GO}} download"
 
   install-lint:
-    desc: golangci-lint{{.LINT_VERSION}} をインストール
+    desc: golangci-lint をインストール
     cmds:
       - go install github.com/golangci/golangci-lint/cmd/golangci-lint@{{.LINT_VERSION}}
 
@@ -62,3 +63,17 @@ tasks:
   docker-down:
     cmds:
       - docker-compose down
+
+  db-up:
+    desc: マイグレーションを実行
+    cmds:
+     - cd build/db/migration/
+     - goose postgres "host=localhost port=5432 user=postgres password=root dbname=postgres sslmode=disable" up
+     - cd ../../..
+
+  db-down:
+    desc: 直近のマイグレーションを取り消し
+    cmds:
+      - cd build/db/migration/
+      - goose postgres "host=localhost port=5432 user=postgres password=root dbname=postgres sslmode=disable" down
+      - cd ../../..

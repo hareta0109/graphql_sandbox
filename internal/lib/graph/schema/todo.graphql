@@ -6,14 +6,14 @@ type Todo {
 }
 
 extend type Query {
-  todos: [Todo!]!
+  todoesByUserId(userId: ID!): [Todo!]!
 }
 
-input NewTodo {
+input TodoCreateInput {
   text: String!
-  userId: String!
+  userId: ID!
 }
 
 extend type Mutation {
-  createTodo(input: NewTodo!): Todo!
+  createTodo(input: TodoCreateInput!): Todo!
 }

@@ -23,6 +23,6 @@ build/docker/postgres/data/*
 # Others..
 .vscode
 .idea/
-.DS_Store/
+.DS_Store
 __debug_bin
 *.log
